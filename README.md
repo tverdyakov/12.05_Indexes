@@ -63,7 +63,7 @@ where date(p.payment_date) = '2005-07-30' and p.payment_date = r.rental_date and
 Использование оконной функции увеличивает количество строк, плюс сортировка по двум параметрам. Удаление повторяющихся строк из-за оконной функции. Плюс лишняя таблица film.
 
 ---
-### Оптимицация запроса
+### Оптимизация запроса
 Удаляю из запроса таблицу film, оператор distinct и оконную функцию. Добавляю GROUP BY.
 ```sql
 EXPLAIN ANALYZE
@@ -88,7 +88,7 @@ GROUP BY concat(c.last_name, ' ', c.first_name);
 ![png](https://github.com/tverdyakov/12.05_Indexes/blob/main/screenshots/Задание%202.4.png)
 
 ---
-### Дополнительная оптимицация запроса
+### Дополнительная оптимизация запроса
 Нашел еще одну лишнюю таблицу(inventory) и оптимизировал запрос путём соединения нескольких таблиц.
 ```sql
 EXPLAIN ANALYZE       
@@ -112,7 +112,7 @@ GROUP BY CONCAT(c.last_name, ' ', c.first_name);
 ![png](https://github.com/tverdyakov/12.05_Indexes/blob/main/screenshots/Задание%202.5.png)
 ![png](https://github.com/tverdyakov/12.05_Indexes/blob/main/screenshots/Задание%202.6.png)
 
-### Финальная оптимицация запроса
+### Финальная оптимизация запроса
 Добавил индекс на payment_date и переписал условие WHERE. 
 ```sql
 CREATE INDEX payment_index ON payment(payment_date);
