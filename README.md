@@ -112,4 +112,29 @@ GROUP BY CONCAT(c.last_name, ' ', c.first_name);
 ![png](https://github.com/tverdyakov/12.05_Indexes/blob/main/screenshots/Задание%202.5.png)
 ![png](https://github.com/tverdyakov/12.05_Indexes/blob/main/screenshots/Задание%202.6.png)
 
+### Финальная оптимицация запроса
+Добавил индекс на payment_date и переписал условие WHERE. 
+```sql
+CREATE INDEX payment_index ON payment(payment_date);
+ 
+EXPLAIN ANALYZE   
+SELECT CONCAT(c.last_name, ' ', c.first_name), SUM(p.amount)
+FROM payment p
+JOIN rental r ON p.payment_date = r.rental_date
+JOIN customer c ON r.customer_id = c.customer_id
+WHERE payment_date >= '2005-07-30' and payment_date < DATE_ADD('2005-07-30', INTERVAL 1 DAY)
+GROUP BY CONCAT(c.last_name, ' ', c.first_name);
+ 
+-> Limit: 200 row(s)  (actual time=2.44..2.46 rows=200 loops=1)
+    -> Table scan on <temporary>  (actual time=2.44..2.45 rows=200 loops=1)
+        -> Aggregate using temporary table  (actual time=2.44..2.44 rows=391 loops=1)
+            -> Nested loop inner join  (cost=576 rows=645) (actual time=0.0247..1.99 rows=642 loops=1)
+                -> Nested loop inner join  (cost=351 rows=634) (actual time=0.0177..0.77 rows=634 loops=1)
+                    -> Filter: ((r.rental_date >= TIMESTAMP'2005-07-30 00:00:00') and (r.rental_date < <cache>(('2005-07-30' + interval 1 day))))  (cost=129 rows=634) (actual time=0.013..0.25 rows=634 loops=1)
+                        -> Covering index range scan on r using rental_date over ('2005-07-30 00:00:00' <= rental_date < '2005-07-31 00:00:00')  (cost=129 rows=634) (actual time=0.0114..0.169 rows=634 loops=1)
+                    -> Single-row index lookup on c using PRIMARY (customer_id=r.customer_id)  (cost=0.25 rows=1) (actual time=724e-6..736e-6 rows=1 loops=634)
+                -> Index lookup on p using payment_index (payment_date=r.rental_date)  (cost=0.254 rows=1.02) (actual time=0.00151..0.00182 rows=1.01 loops=634)
+```
+![png](https://github.com/tverdyakov/12.05_Indexes/blob/main/screenshots/Задание%202.9.png)
+
 ---
